@@ -754,8 +754,9 @@ function initSetup(){
           <select data-f="k" aria-label="Topic">${opts(s.k)}</select>
           <button type="button" class="sess-rm" data-rm="${j}" title="Remove this topic">✕</button></div>
         <div style="display:${String(s.k)==="-1"?"block":"none"};margin-bottom:10px"><input data-f="title" value="${esc(s.title)}" placeholder="Type the topic title"></div>
-        <label>Description <span class="opt">Clients see this</span></label>
-        <textarea data-f="desc" placeholder="Short description of the training">${esc(s.desc)}</textarea>
+        <label>Description <span class="opt">Clients see this · you can edit it</span>
+          ${s.k!==""&&+s.k>=0&&s.desc!==MASTER_TOPICS[+s.k].desc?`<button type="button" class="linkbtn" data-std="${j}" style="margin:0 0 0 8px;font-size:12px">Use standard description</button>`:""}</label>
+        <textarea data-f="desc" placeholder="${String(s.k)==="-1"?"Type a short description of this training":"Choose a topic above. Its ready-made description will appear here, and you can edit it."}">${esc(s.desc)}</textarea>
         <div class="g4">
           <div><label>Duration</label><input data-f="dur" list="durList" value="${esc(s.dur)}"></div>
           <div><label>Date</label><input type="date" data-f="date" value="${s.date}" min="2027-01-01" max="2027-12-31"></div>
@@ -769,7 +770,7 @@ function initSetup(){
         const f=el.dataset.f;
         el.addEventListener(f==="k"?"change":"input",()=>{
           if(f==="k"){
-            const v=el.value; const keepDate=sess[j].date;
+            const v=el.value; const keepDate=sess[j].date; if(v===String(sess[j].k)) return;
             if(v===""){ sess[j]={...blank(),date:keepDate}; }
             else if(v==="-1"){ sess[j]={...sess[j],k:-1,title:"",desc:""}; }
             else { const m=fromMaster(+v); sess[j]={...m, date: keepDate||m.date, start:sess[j].start, end:sess[j].end}; }
@@ -778,6 +779,7 @@ function initSetup(){
         });
       });
     });
+    document.querySelectorAll("#s_sessions [data-std]").forEach(b=>b.addEventListener("click",()=>{ const j=+b.dataset.std; sess[j].desc=MASTER_TOPICS[+sess[j].k].desc; renderSess(); }));
     document.querySelectorAll("#s_sessions [data-rm]").forEach(b=>b.addEventListener("click",()=>{ sess.splice(+b.dataset.rm,1); renderSess(); }));
   }
   $("#s_add").addEventListener("click",()=>{ sess.push(blank()); renderSess();
